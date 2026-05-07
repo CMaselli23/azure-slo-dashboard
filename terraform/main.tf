@@ -42,33 +42,73 @@ resource "azurerm_container_app_environment" "slo" {
   }
 }
 
-# ─── CONTAINER APP ────────────────────────────────────────
-# The actual app — runs your FastAPI container.
-# We start with a public hello-world image to verify
-# deployment works, then swap to our own image in Week 3.
+data "azurerm_container_registry" "slo" {
+  name                = "slodashacrlab"
+  resource_group_name = azurerm_resource_group.slo.name
+}
+
 resource "azurerm_container_app" "slo" {
   name                         = "ca-slo-dashboard"
   resource_group_name          = azurerm_resource_group.slo.name
   container_app_environment_id = azurerm_container_app_environment.slo.id
   revision_mode                = "Single"
 
+  registry {
+    server               = "slodashacrlab.azurecr.io"
+    username             = "slodashacrlab"
+    password_secret_name = "acr-password"
+  }
+
+  secret {
+    name  = "acr-password"
+    value = data.azurerm_container_registry.slo.admin_password
+  }
+
+  secret {
+    name  = "openrouter-key"
+    value = var.openrouter_api_key
+  }
+
   template {
+    min_replicas = 0
+    max_replicas = 3
+
     container {
       name   = "slo-app"
-      image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+      image  = "slodashacrlab.azurecr.io/slo-dashboard:v1"
       cpu    = 0.25
       memory = "0.5Gi"
 
       env {
         name  = "ENVIRONMENT"
-        value = var.environment
+        value = "production"
+      }
+
+      env {
+        name  = "APP_NAME"
+        value = "slo-demo-service"
+      }
+
+      env {
+        name        = "OPENROUTER_API_KEY"
+        secret_name = "openrouter-key"
+      }
+
+      env {
+        name  = "SLO_AVAILABILITY_TARGET"
+        value = "0.999"
+      }
+
+      env {
+        name  = "SLO_LATENCY_TARGET_MS"
+        value = "200"
       }
     }
   }
 
   ingress {
     external_enabled = true
-    target_port      = 80
+    target_port      = 8000
 
     traffic_weight {
       percentage      = 100

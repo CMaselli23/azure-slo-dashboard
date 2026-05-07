@@ -21,3 +21,9 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "openrouter_api_key" {
+  description = "OpenRouter API key for AI explainer"
+  type        = string
+  sensitive   = true
+}

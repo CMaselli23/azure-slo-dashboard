@@ -1,0 +1,11 @@
+.venv/
+.env
+.git/
+.github/
+__pycache__/
+*.pyc
+*.pyo
+terraform/
+tests/
+.gitignore
+*.md
