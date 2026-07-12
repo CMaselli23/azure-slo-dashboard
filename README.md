@@ -67,7 +67,6 @@ All infrastructure is managed as code via Terraform.
 | Observability | Azure Monitor, Application Insights, OpenTelemetry |
 | AI | Claude Haiku via OpenRouter API |
 | Containers | Docker, Azure Container Registry |
-| CI/CD | GitHub Actions |
 | Testing | pytest |
 
 ---
